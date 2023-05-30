@@ -1,5 +1,6 @@
 package efs.task.unittests;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvFileSource;
@@ -7,15 +8,15 @@ import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import java.util.ArrayList;
+import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
-
-
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+
 
 class FitCalculatorTest {
 
+    //testuje metodę isBMICorrect czy zwroci wartosc true dla okreslonych wartosci wag i wzrostu
     @Test
     void shouldReturnTrue_whenDietRecommended() {
         //given
@@ -29,8 +30,9 @@ class FitCalculatorTest {
         assertTrue(recommended);
     }
 
+    //testuje metodę isBMICorrect czy zwroci wartosc false dla okreslonych wartosci wag i wzrostu
     @Test
-    void shouldReturnFalse_whenDietNotRecommended() {
+    void shouldReturnFalse_whenDietRecommended() {
         //given
         double weight = 69.5;
         double height = 1.72;
@@ -42,65 +44,98 @@ class FitCalculatorTest {
         assertFalse(recommended);
     }
 
+    //testuje metode isBMICorrect czy metoda rzuci wyjatkiem dla wzrostu = 0.0
     @Test
-    void shouldThrowException_whenHeightIsZero() {
+    void shouldThrowIllegalArgumentException_whenHeightIsZero(){
         //given
-        double weight = 75.0;
         double height = 0.0;
+        double weight = 60;
+
+        //when
+        Class expectedException = IllegalArgumentException.class;
 
         //then
-        assertThrows(IllegalArgumentException.class, () -> FitCalculator.isBMICorrect(weight, height));
+        Assertions.assertThrows(expectedException, () -> FitCalculator.isBMICorrect(weight, height));
     }
 
-    @ParameterizedTest(name = "Test BMI dla wzrostu=1.80, wagi={0}")
-    @ValueSource(doubles = {83.0, 85.0, 90.0})
-    void shouldReturnTrue_whenBMIwithValueSource(double weight) {
+    //testuje metode isBMICorrect czy zwraca true dla wszystkich podanych wag przy stalym wzroscie
+    @ParameterizedTest (name = "Test BMI dla wagi={0}, wzrostu=1.62") //dostosowanie nazwy tekstu, wyswietlanym w raporcie
+    @ValueSource(doubles = {78.0, 70.5, 80.2})
+    void shouldReturnTrue_whenDietIsRecommended(double weight){
         //given
-        double height = 1.80;
+        double height = 1.62;
 
         //when
         boolean recommended = FitCalculator.isBMICorrect(weight, height);
 
         //then
-        assertTrue(recommended);
+        Assertions.assertTrue(recommended);
     }
 
-    @ParameterizedTest(name = "Test BMI dla wzrostu={0}, wagi={1}")
-    @CsvSource({
-            "1.80, 59.5",
-            "2.80, 75.2",
-            "1.72, 69.7"
+    //testuje metode isBMICorrect czy dla wszystkich par wartosci zwraca false
+    @ParameterizedTest (name = "Test BMI dla wagi={0}, wzrostu={1}")
+    @CsvSource ({"70, 1.69",
+                "45, 1.54",
+                "79, 180"
     })
-    void shouldReturnFalse_whenBMIwithCsvSource(double height, double weight) {
+    void shouldReturnFalse_whenDietIsNotRecommended(double weight, double height){
+        //given
+
         //when
         boolean recommended = FitCalculator.isBMICorrect(weight, height);
 
         //then
-        assertFalse(recommended);
+        Assertions.assertFalse(recommended);
     }
 
-    @ParameterizedTest(name = "Test BMI dla wzrostu={0}, wagi={1}")
-    @CsvFileSource(resources = "/data.csv", numLinesToSkip = 1)
-    void shouldReturnFalse_whenBMIwithCsvFileSource(double height, double weight) {
+    //testuje metode isBMICorrect czy dla wszystkich par wartosci zwraca false
+    @ParameterizedTest (name = "Test BMI dla wagi={0}, wzrostu={1}")
+    @CsvFileSource (resources = "/data.csv", numLinesToSkip = 1)
+    void shouldReturnFalse_whenDietIsRecommendedFromFile(double weight, double height) {
+        //given
+
         //when
         boolean recommended = FitCalculator.isBMICorrect(weight, height);
 
         //then
-        assertFalse(recommended);
+        Assertions.assertFalse(recommended);
     }
 
+    //testuje metode findUserWithTheWorstBMI czy zwraca uzytkownika o najgorszym wyniku BMI
     @Test
-    void testFindUserWithTheWorstBMI_WithUserList_ShouldReturnUserWithWorstBMI() {
-        User userWithWorstBMI = FitCalculator.findUserWithTheWorstBMI(TestConstants.TEST_USERS_LIST);
+    void shouldReturnUserWithTheWorstBMI(){
+        //given
+        List<User> users = TestConstants.TEST_USERS_LIST;
 
-        assertEquals(1.79, userWithWorstBMI.getHeight());
-        assertEquals(97.3, userWithWorstBMI.getWeight());
+        //when
+        User userWithTheWorstBMI = FitCalculator.findUserWithTheWorstBMI(users);
+
+        //then
+        Assertions.assertEquals(97.3, userWithTheWorstBMI.getWeight());
+        Assertions.assertEquals(1.79, userWithTheWorstBMI.getHeight());
     }
 
+    //testuje metode findUserWithTheWorstBMI czy zwraca null w przypadku pustej listy
     @Test
-    void testFindUserWithTheWorstBMI_WithEmptyUserList_ShouldReturnNull() {
-        User userWithWorstBMI = FitCalculator.findUserWithTheWorstBMI(new ArrayList<>());
+    void shouldReturnNull(){
+        //when
+        User userWithTheWorstBMI = FitCalculator.findUserWithTheWorstBMI(new ArrayList<>());
 
-        assertNull(userWithWorstBMI);
+        //then
+        Assertions.assertNull(userWithTheWorstBMI);
+    }
+
+    //testuje metode calculateBMIScore czy zwraca dobre wyniki BMI
+    @Test
+    void shouldBeEqualToGivenList(){
+        //given
+        List<User> users = TestConstants.TEST_USERS_LIST;
+        double [] expectedBMIScore = TestConstants.TEST_USERS_BMI_SCORE;
+
+        //when
+        double [] resultBMIScore = FitCalculator.calculateBMIScore(users);
+
+        //then
+        Assertions.assertArrayEquals(expectedBMIScore, resultBMIScore);
     }
 }

@@ -1,12 +1,14 @@
 package efs.task.unittests;
 
+import java.util.Map;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 
-import static org.junit.jupiter.api.Assertions.*;
-public class PlannerTest {
+public class PlannerTest
+{
     private Planner planner;
 
     @BeforeEach
@@ -14,25 +16,37 @@ public class PlannerTest {
         planner = new Planner();
     }
 
+    //testuje metode calculateDailyCaloriesDemand czy dobrze wylicza dzienne zapotrzebowanie kalorii dla wszystkich wartosci typu wyliczeniowego
     @ParameterizedTest
     @EnumSource(ActivityLevel.class)
-    void testCalculateDailyCaloriesDemand(ActivityLevel activityLevel) {
+    void shouldCheckDailyCaloriesDemand(ActivityLevel activityLevel){
+        //given
+        User user = TestConstants.TEST_USER;
+        Map<ActivityLevel, Integer> acitivityLevelMap = TestConstants.CALORIES_ON_ACTIVITY_LEVEL;
 
-        int expectedCalories = TestConstants.CALORIES_ON_ACTIVITY_LEVEL.get(activityLevel);
-        int actualCalories = planner.calculateDailyCaloriesDemand(TestConstants.TEST_USER, activityLevel);
+        //when
+        int resultDailyCaloriesDemand = planner.calculateDailyCaloriesDemand(user, activityLevel);
 
-        assertEquals(expectedCalories, actualCalories);
+        //then
+        Assertions.assertEquals(resultDailyCaloriesDemand, acitivityLevelMap.get(activityLevel));
     }
 
+
+    //testuje metode calculateDailyIntake czy dobrze wylicza zapotrzebowanie na skladniki odzywcze
     @Test
-    void testCalculateDailyIntake() {
+    void shouldCheckDailyIntake(){
+        //given
+        User user = TestConstants.TEST_USER;
+        DailyIntake expextedDailyIntake = TestConstants.TEST_USER_DAILY_INTAKE;
 
-        DailyIntake expectedIntake = TestConstants.TEST_USER_DAILY_INTAKE;
-        DailyIntake actualIntake = planner.calculateDailyIntake(TestConstants.TEST_USER);
+        //when
+        DailyIntake resultDailyIntake = planner.calculateDailyIntake(user);
 
-        assertEquals(expectedIntake.getCalories(), actualIntake.getCalories());
-        assertEquals(expectedIntake.getProtein(), actualIntake.getProtein());
-        assertEquals(expectedIntake.getFat(), actualIntake.getFat());
-        assertEquals(expectedIntake.getCarbohydrate(), actualIntake.getCarbohydrate());
+        //then
+        Assertions.assertEquals(expextedDailyIntake.getCalories(), resultDailyIntake.getCalories());
+        Assertions.assertEquals(expextedDailyIntake.getProtein(), resultDailyIntake.getProtein());
+        Assertions.assertEquals(expextedDailyIntake.getFat(), resultDailyIntake.getFat());
+        Assertions.assertEquals(expextedDailyIntake.getCarbohydrate(), resultDailyIntake.getCarbohydrate());
     }
+
 }
